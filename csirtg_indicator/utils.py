@@ -34,7 +34,7 @@ RE_HASH = {
 def resolve_itype(indicator, test_broken=False):
     def _ipv6(s):
         try:
-            socket.inet_pton(socket.AF_INET6, s)
+            socket.inet_pton(socket.AF_INET6, s.encode('ascii', 'ignore'))
         except socket.error:
             if not re.match(RE_IPV6, s):
                 return False
@@ -43,7 +43,7 @@ def resolve_itype(indicator, test_broken=False):
 
     def _ipv4(s):
         try:
-            socket.inet_pton(socket.AF_INET, s)
+            socket.inet_pton(socket.AF_INET, s.encode('ascii', 'ignore'))
         except socket.error:
             if not re.match(RE_IPV4, s):
                 return False
@@ -69,7 +69,7 @@ def resolve_itype(indicator, test_broken=False):
                 return True
 
     def _url_broken(s):
-        u = urlparse('{}{}'.format('http://', s))
+        u = urlparse(u'{}{}'.format('http://', s))
         if re.match(RE_URI_SCHEMES, u.scheme):
             if _fqdn(u.netloc) or _ipv4(u.netloc) or _ipv6(u.netloc):
                 return True
@@ -92,12 +92,12 @@ def resolve_itype(indicator, test_broken=False):
     elif _ipv6(indicator):
         return 'ipv6'
 
-    raise InvalidIndicator('unknown itype for "{}"'.format(indicator))
+    raise InvalidIndicator(u'unknown itype for "{}"'.format(indicator))
 
 
 def _normalize_url(i):
     if resolve_itype(i['indicator'], test_broken=True) == 'broken_url':
-        i['indicator'] = '{}{}'.format('http://', i['indicator'])
+        i['indicator'] = u'{}{}'.format('http://', i['indicator'])
 
     return i
 
@@ -115,10 +115,10 @@ def normalize_itype(i, itype=None):
 
 def is_subdomain(i):
     if resolve_itype(i) == 'fqdn':
-        bits = i.split('.')
+        bits = i.split(u'.')
         if len(bits) > 2:
             bits.pop(0)
-            return '.'.join(bits)
+            return u'.'.join(bits)
 
 
 def is_ipv4_net(i):
